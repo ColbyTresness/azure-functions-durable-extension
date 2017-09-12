@@ -428,8 +428,6 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
                 var status = await client.WaitForCompletionAsync(TimeSpan.FromSeconds(10), this.output);
 
                 Assert.Equal("Failed", status?.RuntimeStatus);
-
-                // There aren't any exception details in the output: https://github.com/Azure/azure-webjobs-sdk-script-pr/issues/36
                 Assert.True(status?.Output.ToString().Contains("Value cannot be null"));
 
                 await host.StopAsync();
@@ -463,8 +461,6 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
                 var status = await client.WaitForCompletionAsync(TimeSpan.FromSeconds(50), this.output);
 
                 Assert.Equal("Failed", status?.RuntimeStatus);
-
-                // There aren't any exception details in the output: https://github.com/Azure/azure-webjobs-sdk-script-pr/issues/36
                 Assert.True(status?.Output.ToString().Contains("Value cannot be null"));
 
                 await host.StopAsync();
@@ -488,8 +484,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
                 nameof(TestOrchestrations.OrchestratorWithRetry_NullRetryOptions)
             };
 
-            using (JobHost host =
-                TestHelpers.GetJobHost(loggerFactory, nameof(OrchestrationWithRetry_NullRetryOptions)))
+            using (JobHost host = TestHelpers.GetJobHost(loggerFactory, nameof(OrchestrationWithRetry_NullRetryOptions)))
             {
                 await host.StartAsync();
 
@@ -498,9 +493,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
                 var status = await client.WaitForCompletionAsync(TimeSpan.FromSeconds(50), this.output);
 
                 Assert.Equal("Failed", status?.RuntimeStatus);
-
-                // There aren't any exception details in the output: https://github.com/Azure/azure-webjobs-sdk-script-pr/issues/36
-                Assert.True(status?.Output.ToString().Contains("Value cannot be null.\r\nParameter name: retryOptions"));
+                Assert.True(status?.Output.ToString().Contains("Value cannot be null."));
+                Assert.True(status?.Output.ToString().Contains("Parameter name: retryOptions"));
 
                 await host.StopAsync();
             }
@@ -582,24 +576,18 @@ namespace Microsoft.Azure.WebJobs.Extensions.DurableTask.Tests
         [Fact]
         public async Task ActivityWithRetry_NullRetryOptions()
         {
-            string[] orchestratorFunctionNames =
-            {
-                nameof(TestOrchestrations.ActivityWithRetry_NullRetryOptions)
-            };
-            string activityFunctionName = nameof(TestActivities.Throw);
-
             using (JobHost host = TestHelpers.GetJobHost(loggerFactory, nameof(ActivityWithRetry_NullRetryOptions)))
             {
                 await host.StartAsync();
 
                 string message = "Kah-BOOOOM!!!";
-                var client = await host.StartFunctionAsync(orchestratorFunctionNames[0], message, this.output);
+                string orchestratorFunctionName = nameof(TestOrchestrations.ActivityWithRetry_NullRetryOptions);
+                var client = await host.StartFunctionAsync(orchestratorFunctionName, message, this.output);
                 var status = await client.WaitForCompletionAsync(TimeSpan.FromSeconds(40), this.output);
 
                 Assert.Equal("Failed", status?.RuntimeStatus);
-
-                // There aren't any exception details in the output: https://github.com/Azure/azure-webjobs-sdk-script-pr/issues/36
-                Assert.True(status?.Output.ToString().Contains("Value cannot be null.\r\nParameter name: retryOptions"));
+                Assert.True(status?.Output.ToString().Contains("Value cannot be null."));
+                Assert.True(status?.Output.ToString().Contains("Parameter name: retryOptions"));
 
                 await host.StopAsync();
             }
